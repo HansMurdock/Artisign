@@ -1,0 +1,12 @@
+# Mengabaikan virtual environment
+venv/
+__pycache__/
+
+# Mencegah kebocoran kunci kriptografi
+*.pem
+*.key
+.env
+
+# Mengabaikan file hasil uji coba
+*.pdf
+*.zip
