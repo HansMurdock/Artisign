@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisign - Digital Asset Certificate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-200">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
+            <span class="text-xl font-bold tracking-tight">Artisign</span>
+        </div>
+        <div class="text-sm text-slate-500 font-medium">
+            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">Secured by ECDSA P-256</span>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
+        
+        <!-- Panel Kiri: Ruang Kreator (Sign) -->
+        <section class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <h2 class="text-2xl font-bold mb-2">Penerbitan Sertifikat</h2>
+            <p class="text-slate-500 text-sm mb-6">Unggah aset digital untuk ditandatangani secara kriptografis.</p>
+            
+            <form action="/sign" method="POST" enctype="multipart/form-data" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Nama Kreator</label>
+                    <input type="text" name="creator_name" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Budi Santoso" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">File Aset / Dokumen</label>
+                    <input type="file" name="file_upload" class="w-full border border-slate-300 rounded-lg px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Password Private Key</label>
+                    <input type="password" name="password" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Masukkan master password" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition shadow-md">
+                    Generate Digital Signature
+                </button>
+            </form>
+        </section>
+
+        <!-- Panel Kanan: Validator Publik (Verify) -->
+        <section class="bg-slate-900 text-white p-8 rounded-2xl shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 opacity-10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            
+            <h2 class="text-2xl font-bold mb-2 relative z-10">Validator Publik</h2>
+            <p class="text-slate-400 text-sm mb-6 relative z-10">Verifikasi keaslian dokumen dan uji integritas file (Tamper Test).</p>
+            
+            <form action="/verify" method="POST" enctype="multipart/form-data" class="space-y-5 relative z-10">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-300">File Sertifikat (PDF/JSON)</label>
+                    <input type="file" name="cert_file" class="w-full border border-slate-700 bg-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-700 file:text-white" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-300">File Aset Asli</label>
+                    <input type="file" name="asset_file" class="w-full border border-slate-700 bg-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-700 file:text-white" required>
+                </div>
+                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-lg transition shadow-lg mt-4">
+                    Verifikasi Keaslian
+                </button>
+            </form>
+        </section>
+
+    </main>
+</body>
+</html>

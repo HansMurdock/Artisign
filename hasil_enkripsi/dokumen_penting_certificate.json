@@ -1,0 +1,10 @@
+{
+    "creator": {
+        "name": "Rafa Ahza Naufal",
+        "role": "Creator",
+        "email": "creator@example.com"
+    },
+    "hash": "71337c1072298d3c8f93534764fcd45f8bf0f04736bfb70093d7267b3f14b4de",
+    "signature": "MEYCIQCWCvRWIKiifauSps5JMBkFZPG65HlSrCvCvINIyyBowQIhAKDAUqXbGH38LOknK/HT6YzpzcQRvu7QmkVLDT7uKmg8",
+    "verification_url": "https://verifikasi-aset.com/verify?hash=71337c1072298d3c8f93534764fcd45f8bf0f04736bfb70093d7267b3f14b4de&signature=MEYCIQCWCvRWIKiifauSps5JMBkFZPG65HlSrCvCvINIyyBowQIhAKDAUqXbGH38LOknK/HT6YzpzcQRvu7QmkVLDT7uKmg8"
+}
