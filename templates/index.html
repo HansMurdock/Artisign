@@ -5,67 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artisign - Digital Asset Certificate</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-200">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-200 min-h-screen flex flex-col">
     <!-- Navbar -->
     <nav class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div class="flex items-center gap-2">
+        <a href="/" class="flex items-center gap-2">
             <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
             <span class="text-xl font-bold tracking-tight">Artisign</span>
-        </div>
-        <div class="text-sm text-slate-500 font-medium">
-            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">Secured by ECDSA P-256</span>
+        </a>
+        <div class="flex items-center gap-4">
+            <a href="/validator" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition">Halaman Validator</a>
+            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">Secured by ECDSA P-256</span>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
+    <main class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-10 flex-1 w-full">
         
         <!-- Panel Kiri: Ruang Kreator (Sign) -->
-        <section class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-            <h2 class="text-2xl font-bold mb-2">Penerbitan Sertifikat</h2>
-            <p class="text-slate-500 text-sm mb-6">Unggah aset digital untuk ditandatangani secara kriptografis.</p>
-            
-            <form action="/sign" method="POST" enctype="multipart/form-data" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Nama Kreator</label>
-                    <input type="text" name="creator_name" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Budi Santoso" required>
+        <section class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-2xl font-bold text-slate-900">Penerbitan Sertifikat</h2>
+                    <span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">Kreator</span>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">File Aset / Dokumen</label>
-                    <input type="file" name="file_upload" class="w-full border border-slate-300 rounded-lg px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Password Private Key</label>
-                    <input type="password" name="password" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Masukkan master password" required>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition shadow-md">
-                    Generate Digital Signature
-                </button>
-            </form>
+                <p class="text-slate-500 text-sm mb-6">Unggah aset digital untuk ditandatangani dan disegel secara kriptografis.</p>
+                
+                <form action="/sign" method="POST" enctype="multipart/form-data" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1 text-slate-700">Nama Kreator / Pemilik Sah</label>
+                        <input type="text" name="creator_name" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" placeholder="Contoh: Budi Santoso" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1 text-slate-700">File Aset / Dokumen</label>
+                        <input type="file" name="file_upload" id="creator_file" onchange="previewCreatorHash(this)" class="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" required>
+                        
+                        <!-- Client-side hash preview -->
+                        <div id="creator-hash-badge" class="hidden mt-2 p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                            <div class="flex justify-between text-slate-500 text-[11px] mb-0.5">
+                                <span>Sidik Jari SHA-256 (Dihitung Lokal):</span>
+                                <span id="creator-file-size" class="font-mono">0 KB</span>
+                            </div>
+                            <code id="creator-hash-val" class="block font-mono text-[10px] text-blue-900 bg-white p-1 rounded border border-slate-200 break-all font-semibold">...</code>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1 text-slate-700">Password Kunci Privat</label>
+                        <input type="password" name="password" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" placeholder="Masukkan master password kunci" required>
+                        <p class="text-[11px] text-slate-400 mt-1">Default pengujian: <code class="font-mono text-slate-600">super_secret_password_123</code></p>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition shadow-md flex items-center justify-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        Segel Dokumen & Terbitkan Sertifikat
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
+                <span>Output: Sertifikat A4, Stempel PDF, JSON & QR Code</span>
+                <span class="font-mono text-emerald-600 font-semibold">&#10003; NIST P-256</span>
+            </div>
         </section>
 
         <!-- Panel Kanan: Validator Publik (Verify) -->
-        <section class="bg-slate-900 text-white p-8 rounded-2xl shadow-xl relative overflow-hidden">
+        <section class="bg-slate-900 text-white p-8 rounded-2xl shadow-xl relative overflow-hidden flex flex-col justify-between">
             <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 opacity-10 rounded-full blur-3xl -mr-20 -mt-20"></div>
             
-            <h2 class="text-2xl font-bold mb-2 relative z-10">Validator Publik</h2>
-            <p class="text-slate-400 text-sm mb-6 relative z-10">Verifikasi keaslian dokumen dan uji integritas file (Tamper Test).</p>
-            
-            <form action="/verify" method="POST" enctype="multipart/form-data" class="space-y-5 relative z-10">
-                <div>
-                    <label class="block text-sm font-semibold mb-1 text-slate-300">File Sertifikat (PDF/JSON)</label>
-                    <input type="file" name="cert_file" class="w-full border border-slate-700 bg-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-700 file:text-white" required>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-2xl font-bold">Validator Publik</h2>
+                    <span class="bg-emerald-950 text-emerald-300 border border-emerald-800 text-xs px-2.5 py-1 rounded-full font-bold">Uji Tamper</span>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1 text-slate-300">File Aset Asli</label>
-                    <input type="file" name="asset_file" class="w-full border border-slate-700 bg-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-700 file:text-white" required>
+                <p class="text-slate-400 text-sm mb-5">Verifikasi keaslian dokumen dan uji integritas file secara independen.</p>
+
+                <!-- Tombol Kamera Scanner Cepat -->
+                <div class="mb-4">
+                    <button type="button" onclick="toggleIndexCamera()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 text-slate-200">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span id="index-cam-text">Pindai QR Code via Kamera</span>
+                    </button>
+                    <div id="index-cam-container" class="hidden mt-3 p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
+                        <div id="index-reader" class="w-full max-w-xs mx-auto overflow-hidden rounded-lg"></div>
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-lg transition shadow-lg mt-4">
-                    Verifikasi Keaslian
-                </button>
-            </form>
+                
+                <form action="/verify" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1 text-slate-300">File Sertifikat (.json, .sig, .zip, .pdf)</label>
+                        <input type="file" name="cert_file" accept=".json,.sig,.zip,.pdf" class="w-full border border-slate-700 bg-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1 text-slate-300">File Aset yang Ingin Diuji</label>
+                        <input type="file" name="asset_file" class="w-full border border-slate-700 bg-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer" required>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-lg transition shadow-lg mt-2 flex items-center justify-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Verifikasi Keaslian Dokumen
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between relative z-10">
+                <span>Deteksi modifikasi data hingga ke level 1-byte</span>
+                <a href="/validator" class="text-blue-400 hover:text-blue-300 font-semibold underline">Mode Lengkap &rarr;</a>
+            </div>
         </section>
 
     </main>
+
+    <!-- Script Client Hashing & Scanner untuk Halaman Utama -->
+    <script>
+        async function previewCreatorHash(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const badge = document.getElementById('creator-hash-badge');
+            const size = document.getElementById('creator-file-size');
+            const val = document.getElementById('creator-hash-val');
+
+            badge.classList.remove('hidden');
+            size.innerText = (file.size / 1024).toFixed(1) + " KB";
+            val.innerText = "Menghitung...";
+
+            const buf = await file.arrayBuffer();
+            const digest = await crypto.subtle.digest('SHA-256', buf);
+            const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+            val.innerText = hex;
+        }
+
+        let indexQrCode = null;
+        let indexScanning = false;
+
+        function toggleIndexCamera() {
+            if (indexScanning) {
+                if (indexQrCode) {
+                    indexQrCode.stop().then(() => {
+                        indexQrCode.clear();
+                        indexQrCode = null;
+                    });
+                }
+                document.getElementById('index-cam-container').classList.add('hidden');
+                document.getElementById('index-cam-text').innerText = "Pindai QR Code via Kamera";
+                indexScanning = false;
+            } else {
+                const container = document.getElementById('index-cam-container');
+                container.classList.remove('hidden');
+                document.getElementById('index-cam-text').innerText = "Tutup Kamera";
+                indexScanning = true;
+
+                indexQrCode = new Html5Qrcode("index-reader");
+                indexQrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 200, height: 200 } },
+                    (decodedText) => {
+                        try {
+                            if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
+                                const url = new URL(decodedText);
+                                const hash = url.searchParams.get("hash");
+                                const sig = url.searchParams.get("signature");
+                                if (hash) {
+                                    window.location.href = `/verify?hash=${hash}&signature=${sig || ''}`;
+                                    return;
+                                }
+                            }
+                            const parsed = JSON.parse(decodedText);
+                            if (parsed.hash) {
+                                window.location.href = `/verify?hash=${parsed.hash}&signature=${parsed.signature || ''}`;
+                                return;
+                            }
+                        } catch (e) {
+                            alert("QR terbaca: " + decodedText);
+                        }
+                    },
+                    () => {}
+                ).catch(err => {
+                    alert("Kamera tidak dapat diakses: " + err);
+                });
+            }
+        }
+    </script>
 </body>
 </html>

@@ -11,10 +11,14 @@ password_rahasia = b"super_secret_password_123"
 os.makedirs("./keys", exist_ok=True)
 os.makedirs("./documents", exist_ok=True)
 
-# 2. Buat file dummy di dalam folder 'documents'
+# 2. Buat file dummy PDF valid di dalam folder 'documents'
+import pymupdf
 file_test = "./documents/dokumen_penting.pdf"
-with open(file_test, "w") as f:
-    f.write("Ini adalah isi sertifikat aset digital.")
+doc = pymupdf.open()
+p = doc.new_page()
+p.insert_text((50, 50), "Ini adalah isi sertifikat aset digital.")
+doc.save(file_test)
+doc.close()
 
 # 3. Generate Kunci
 crypto_app.generate_keys(password_rahasia, save_path="./keys")

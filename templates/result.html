@@ -3,36 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artisign - Hasil Verifikasi</title>
+    <title>Artisign - Hasil Proses</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased flex items-center justify-center min-h-screen">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen py-10 px-4 flex flex-col justify-center items-center">
     
-    <div class="bg-white p-10 rounded-2xl shadow-lg border border-slate-100 max-w-md w-full text-center">
+    <div class="bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-slate-100 max-w-xl w-full text-center">
         
-        <!-- Logika Jinja untuk menampilkan icon Sukses (Hijau) atau Gagal (Merah) -->
+        <!-- Status Icon -->
         {% if type == 'success' %}
-        <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+            </svg>
         </div>
         {% else %}
-        <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm animate-pulse">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
         </div>
         {% endif %}
 
-        <h2 class="text-2xl font-bold mb-2">{{ title }}</h2>
-        <p class="text-slate-500 mb-8">{{ message }}</p>
+        <h2 class="text-2xl font-bold mb-2 text-slate-900">{{ title }}</h2>
+        <p class="text-slate-600 text-sm mb-6 leading-relaxed">{{ message }}</p>
 
-        <div class="flex flex-col gap-3">
-            <!-- Jika sukses dan ada file yang bisa diunduh, tampilkan tombol download -->
-            {% if file_url %}
-            <a href="{{ file_url }}" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition shadow-md">
-                Unduh Sertifikat & QR Code
+        <!-- Preview QR Code jika tersedia -->
+        {% if qr_preview_url %}
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 inline-block mx-auto mb-6 shadow-sm">
+            <img src="{{ qr_preview_url }}" alt="QR Code Sertifikat" class="w-48 h-48 mx-auto rounded-lg">
+            <span class="block text-xs text-slate-500 mt-2 font-medium">Scan QR Code untuk verifikasi keaslian</span>
+        </div>
+        {% endif %}
+
+        <!-- Detail Kriptografis / Metadata -->
+        {% if details %}
+        <div class="bg-slate-50 rounded-xl p-4 mb-6 text-left border border-slate-200 text-xs space-y-2">
+            {% if details.filename %}
+            <div class="flex justify-between items-center py-1 border-b border-slate-200">
+                <span class="text-slate-500 font-semibold">Nama Berkas</span>
+                <span class="font-mono text-slate-800 font-bold truncate max-w-xs">{{ details.filename }}</span>
+            </div>
+            {% endif %}
+
+            {% if details.creator %}
+            <div class="flex justify-between items-center py-1 border-b border-slate-200">
+                <span class="text-slate-500 font-semibold">Kreator Sah</span>
+                <span class="text-blue-700 font-bold">{{ details.creator }}</span>
+            </div>
+            {% endif %}
+
+            {% if details.hash %}
+            <div class="py-1 border-b border-slate-200">
+                <span class="text-slate-500 font-semibold block mb-0.5">SHA-256 Digest:</span>
+                <span class="font-mono text-slate-700 break-all text-[11px] block bg-white p-1.5 rounded border border-slate-200">{{ details.hash }}</span>
+            </div>
+            {% endif %}
+
+            {% if details.expected_hash and details.calculated_hash %}
+            <div class="py-1 border-b border-slate-200 space-y-1">
+                <div>
+                    <span class="text-slate-500 font-semibold block text-[11px]">Hash Tertera di Sertifikat:</span>
+                    <span class="font-mono text-emerald-700 break-all text-[10px] block bg-emerald-50 p-1 rounded">{{ details.expected_hash }}</span>
+                </div>
+                <div>
+                    <span class="text-slate-500 font-semibold block text-[11px]">Hash Aktual Berkas yang Diunggah:</span>
+                    <span class="font-mono text-rose-700 break-all text-[10px] block bg-rose-50 p-1 rounded">{{ details.calculated_hash }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="flex justify-between items-center pt-1">
+                <span class="text-slate-500 font-semibold">Status Integritas</span>
+                {% if type == 'success' %}
+                <span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[11px]">TERVERIFIKASI SAH</span>
+                {% else %}
+                <span class="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[11px]">TIDAK COCOK / TAMPERED</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Opsi Unduh & Navigasi -->
+        <div class="flex flex-col gap-2.5">
+            {% if stamped_pdf_url %}
+            <a href="{{ stamped_pdf_url }}" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg transition shadow-sm flex items-center justify-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Unduh PDF Berstempel Segel Digital
             </a>
             {% endif %}
+
+            {% if cert_pdf_url %}
+            <a href="{{ cert_pdf_url }}" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition shadow-sm flex items-center justify-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Unduh Lembar Sertifikat Keaslian (PDF A4)
+            </a>
+            {% endif %}
+
+            {% if bundle_url %}
+            <a href="{{ bundle_url }}" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition shadow-sm flex items-center justify-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Unduh Paket Lengkap (.ZIP)
+            </a>
+            {% endif %}
+
+            <div class="flex gap-2 pt-1">
+                {% if cert_url %}
+                <a href="{{ cert_url }}" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 rounded-lg transition border border-slate-200 flex items-center justify-center">
+                    Sertifikat JSON
+                </a>
+                {% endif %}
+
+                {% if qr_download_url %}
+                <a href="{{ qr_download_url }}" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 rounded-lg transition border border-slate-200 flex items-center justify-center">
+                    Gambar QR (.PNG)
+                </a>
+                {% endif %}
+            </div>
             
-            <a href="/" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-lg transition">
+            <a href="/" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-lg transition text-sm mt-1">
                 Kembali ke Beranda
             </a>
         </div>

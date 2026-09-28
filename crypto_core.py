@@ -88,5 +88,50 @@ class DigitalSignatureApp:
                 ec.ECDSA(Prehashed(self.hash_algorithm))
             )
             return True
-        except InvalidSignature:
+        except (InvalidSignature, ValueError, TypeError):
             return False
+
+# =====================================================================
+# Fungsi Mandiri (Level-Modul untuk Kompatibilitas & Pengujian Otomatis)
+# =====================================================================
+
+def generate_keys():
+    """
+    Membangkitkan pasangan kunci privat dan publik ECDSA SECP256R1 (P-256).
+    Mengembalikan tuple (private_key, public_key).
+    """
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    return private_key, private_key.public_key()
+
+def hash_document(data: bytes | str) -> bytes:
+    """
+    Menghasilkan nilai hash SHA-256 dari data mentah (32 bytes).
+    """
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    digest = hashes.Hash(hashes.SHA256())
+    digest.update(data)
+    return digest.finalize()
+
+def sign_data(doc_hash: bytes, private_key) -> bytes:
+    """
+    Menandatangani digest hash menggunakan kunci privat ECDSA P-256.
+    """
+    return private_key.sign(
+        doc_hash,
+        ec.ECDSA(Prehashed(hashes.SHA256()))
+    )
+
+def verify_signature(doc_hash: bytes, signature: bytes, public_key) -> bool:
+    """
+    Memverifikasi tanda tangan digital terhadap digest hash menggunakan kunci publik.
+    """
+    try:
+        public_key.verify(
+            signature,
+            doc_hash,
+            ec.ECDSA(Prehashed(hashes.SHA256()))
+        )
+        return True
+    except (InvalidSignature, ValueError, TypeError, Exception):
+        return False

@@ -57,3 +57,17 @@ def test_wrong_public_key():
     # Mencoba verifikasi tanda tangan user 1 menggunakan kunci publik user 2
     is_valid = verify_signature(doc_hash, signature, pub_key_2)
     assert is_valid == False
+
+if __name__ == '__main__':
+    print("Menjalankan seluruh pengujian keamanan kriptografi...")
+    test_key_generation()
+    print("- Test 1: Pembangkitan Kunci ECDSA P-256 ... OK")
+    test_hash_consistency()
+    print("- Test 2: Konsistensi Hashing SHA-256 ... OK")
+    test_valid_signature_verification()
+    print("- Test 3: Tanda Tangan & Verifikasi Normal ... OK")
+    test_tamper_document()
+    print("- Test 4: Uji Tamper (Deteksi Manipulasi Data) ... OK")
+    test_wrong_public_key()
+    print("- Test 5: Uji Kunci Salah (Penolakan Kunci Publik Berbeda) ... OK")
+    print("\nSemua 5 pengujian keamanan kriptografi LULUS 100%!")

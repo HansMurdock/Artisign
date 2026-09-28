@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisign - Validator Publik & Uji Tamper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library Pemindai Kamera HTML5-QRCode -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-200 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50">
+        <a href="/" class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
+            <span class="text-xl font-bold tracking-tight">Artisign</span>
+        </a>
+        <div class="flex items-center gap-4">
+            <a href="/" class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition">Penerbitan Sertifikat</a>
+            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">Publik Validator</span>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-6 py-12 flex-1 w-full">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Validator Keaslian & Uji Tamper</h1>
+            <p class="text-slate-600 text-sm max-w-lg mx-auto">
+                Buktikan integritas dan keaslian dokumen digital Anda menggunakan kriptografi asimetris ECDSA P-256 & SHA-256.
+            </p>
+        </div>
+
+        <!-- Tombol Buka Kamera Scanner QR -->
+        <div class="flex justify-center mb-8">
+            <button id="btn-toggle-camera" type="button" onclick="toggleCameraScanner()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-5 py-2.5 rounded-full transition shadow-md flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span id="camera-btn-text">Pindai QR via Kamera / Webcam</span>
+            </button>
+        </div>
+
+        <!-- Viewport Kamera Scanner (Terselubung secara default) -->
+        <div id="camera-scanner-container" class="hidden bg-white p-6 rounded-2xl shadow-md border border-slate-200 mb-8 text-center transition-all">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Pemindai Kamera Aktif
+                </h3>
+                <button type="button" onclick="stopCameraScanner()" class="text-slate-400 hover:text-slate-600 text-xs font-semibold">Tutup Kamera &times;</button>
+            </div>
+            <div id="reader" class="w-full max-w-sm mx-auto overflow-hidden rounded-xl border border-slate-200"></div>
+            <p class="text-[11px] text-slate-500 mt-2">Arahkan kamera ke gambar QR Code sertifikat untuk mendeteksi tanda tangan otomatis.</p>
+        </div>
+
+        {% if prefilled_hash %}
+        <!-- Banner QR Code Terdeteksi -->
+        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-8 text-blue-900 shadow-sm">
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-sm">Sertifikat Terdeteksi dari QR Code!</h3>
+                    <p class="text-xs text-blue-700 mt-1">Hash SHA-256 yang tersimpan di dalam QR Code:</p>
+                    <code id="qr-target-hash" class="block font-mono text-[11px] bg-white p-2 rounded border border-blue-200 mt-1.5 break-all text-blue-950 font-semibold">{{ prefilled_hash }}</code>
+                    <p class="text-xs text-blue-600 mt-2">Unggah file aset asli Anda di bawah untuk menguji apakah dokumen cocok dengan tanda tangan digital tersebut.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Form Verifikasi -->
+        <div class="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-slate-200">
+            <form action="/verify" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-800">
+                        File Sertifikat Digital
+                        <span class="text-xs text-slate-400 font-normal">(.json, .sig, .zip, atau .pdf tersertifikasi)</span>
+                    </label>
+                    <input type="file" name="cert_file" id="cert_file_input" accept=".json,.sig,.zip,.pdf" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition" required>
+                    <p class="text-[11px] text-slate-500 mt-1">Unggah file sertifikat JSON, berkas .sig, arsip ZIP, atau file PDF berstempel resmi Artisign.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-800">
+                        File Aset yang Ingin Diuji
+                        <span class="text-xs text-slate-400 font-normal">(PDF Asli, Gambar, Arsip, dll.)</span>
+                    </label>
+                    <input type="file" name="asset_file" id="asset_file_input" onchange="calculateClientHash(this)" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition" required>
+                    <p class="text-[11px] text-slate-500 mt-1">Pilih berkas asli yang ingin Anda cek keabsahannya.</p>
+
+                    <!-- Real-Time Client-Side Hashing Badge -->
+                    <div id="client-hash-container" class="hidden mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-slate-500 font-semibold flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Sidik Jari Real-Time Dihitung di Browser:
+                            </span>
+                            <span id="client-file-size" class="text-slate-400 font-mono">0 KB</span>
+                        </div>
+                        <code id="client-hash-value" class="block font-mono text-[10.5px] bg-white p-1.5 rounded border border-slate-200 break-all text-slate-700 font-bold">Menganalisis...</code>
+                        <div id="preliminary-match" class="mt-2 hidden text-[11px] font-bold"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-lg transition shadow-md flex items-center justify-center gap-2 text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Jalankan Verifikasi Keaslian
+                </button>
+            </form>
+        </div>
+
+        <!-- Edukasi / Cara Kerja Kriptografi -->
+        <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-500">
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                <h4 class="font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    Deteksi Tamper (Perubahan Data)
+                </h4>
+                <p>Sistem menghitung nilai hash SHA-256 dari berkas. Jika ada 1 huruf atau 1 byte saja yang diedit orang lain, sidik jari berkas akan berubah total dan sistem langsung menolak dokumen.</p>
+            </div>
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                <h4 class="font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Bukti Kepemilikan (Non-Repudiasi)
+                </h4>
+                <p>Hanya pemilik sah dengan kunci privat terenkripsi yang dapat menerbitkan tanda tangan ini. Verifikasi dengan kunci publik membuktikan siapa pencipta asli dokumen tersebut.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Pemindai Kamera & Hashing Klien -->
+    <script>
+        let html5QrCode = null;
+        let isScanning = false;
+
+        function toggleCameraScanner() {
+            if (isScanning) {
+                stopCameraScanner();
+            } else {
+                startCameraScanner();
+            }
+        }
+
+        function startCameraScanner() {
+            const container = document.getElementById('camera-scanner-container');
+            const btnText = document.getElementById('camera-btn-text');
+            container.classList.remove('hidden');
+            btnText.innerText = "Hentikan Pemindai Kamera";
+            isScanning = true;
+
+            html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText, decodedResult) => {
+                    // QR Code berhasil terbaca!
+                    handleQrScanResult(decodedText);
+                    stopCameraScanner();
+                },
+                (errorMessage) => {
+                    // Penanganan per frame saat QR belum terdeteksi (abaikan)
+                }
+            ).catch(err => {
+                alert("Gagal mengakses kamera: " + err + ". Pastikan izin kamera aktif.");
+                stopCameraScanner();
+            });
+        }
+
+        function stopCameraScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    html5QrCode = null;
+                }).catch(err => console.log(err));
+            }
+            document.getElementById('camera-scanner-container').classList.add('hidden');
+            document.getElementById('camera-btn-text').innerText = "Pindai QR via Kamera / Webcam";
+            isScanning = false;
+        }
+
+        function handleQrScanResult(qrText) {
+            try {
+                // Skenario 1: Tautan URL (http://.../verify?hash=...&signature=...)
+                if (qrText.startsWith("http://") || qrText.startsWith("https://")) {
+                    const url = new URL(qrText);
+                    const hashParam = url.searchParams.get("hash");
+                    const sigParam = url.searchParams.get("signature");
+                    if (hashParam) {
+                        window.location.href = `/verify?hash=${hashParam}&signature=${sigParam || ''}`;
+                        return;
+                    }
+                }
+
+                // Skenario 2: Payload JSON langsung
+                const parsed = JSON.parse(qrText);
+                if (parsed.hash) {
+                    window.location.href = `/verify?hash=${parsed.hash}&signature=${parsed.signature || ''}`;
+                    return;
+                }
+            } catch (e) {
+                alert("QR Code terbaca: " + qrText);
+            }
+        }
+
+        // Real-Time Client-Side Hashing menggunakan Web Crypto API
+        async function calculateClientHash(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const container = document.getElementById('client-hash-container');
+            const sizeLabel = document.getElementById('client-file-size');
+            const hashLabel = document.getElementById('client-hash-value');
+            const matchLabel = document.getElementById('preliminary-match');
+
+            container.classList.remove('hidden');
+            sizeLabel.innerText = (file.size / 1024).toFixed(1) + " KB";
+            hashLabel.innerText = "Menghitung SHA-256...";
+            matchLabel.classList.add('hidden');
+
+            const buffer = await file.arrayBuffer();
+            const digestBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(digestBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            hashLabel.innerText = hashHex;
+
+            // Jika ada hash target dari QR scan, uji langsung di browser
+            const targetElem = document.getElementById('qr-target-hash');
+            if (targetElem) {
+                const targetHash = targetElem.innerText.trim();
+                matchLabel.classList.remove('hidden');
+                if (targetHash.toLowerCase() === hashHex.toLowerCase()) {
+                    matchLabel.className = "mt-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 p-2 rounded border border-emerald-200 flex items-center gap-1.5";
+                    matchLabel.innerHTML = "<span>&#10004;</span> HASIL AWAL: Sidik jari file COCOK dengan QR Code!";
+                } else {
+                    matchLabel.className = "mt-2 text-[11px] font-bold text-rose-600 bg-rose-50 p-2 rounded border border-rose-200 flex items-center gap-1.5";
+                    matchLabel.innerHTML = "<span>&#9888;</span> PERINGATAN: Sidik jari file BERBEDA dengan QR Code (Terindikasi Dimodifikasi)!";
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
