@@ -5,7 +5,11 @@ __pycache__/
 # Mencegah kebocoran kunci kriptografi
 *.pem
 *.key
+*.p12
+*.enc
 .env
+keys/
+private_key*
 
 # Mengabaikan file hasil uji coba
 *.pdf
