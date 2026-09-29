@@ -1,0 +1,9 @@
+{
+    "creator": {
+        "name": "Zaki Zaidan",
+        "role": "Creator"
+    },
+    "hash": "f6c697250d1019e37e6c9d16feab7f1ea3467ba4864636b02777cd6a8757705e",
+    "signature": "MEUCICNdWUI0gPcYHspCTjMgpae0xTkxCUJFZWsd89k0q0W3AiEAh6P9FI8agRttWJh3488fDVZYMcc2lgchd0PIzP5fFgw=",
+    "verification_url": "http://127.0.0.1:5000/verify?hash=f6c697250d1019e37e6c9d16feab7f1ea3467ba4864636b02777cd6a8757705e&signature=MEUCICNdWUI0gPcYHspCTjMgpae0xTkxCUJFZWsd89k0q0W3AiEAh6P9FI8agRttWJh3488fDVZYMcc2lgchd0PIzP5fFgw="
+}
