@@ -16,7 +16,6 @@ Anggota 3 — Keamanan & Unit Test
 """
 
 import os
-import json
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
@@ -47,13 +46,13 @@ def _derive_key(password: bytes, salt: bytes) -> bytes:
     return kdf.derive(password)
 
 
-def encrypt_private_key(private_key_pem: bytes, master_password: bytes) -> bytes:
+def encrypt_private_key(private_key_pem: bytes | str, master_password: bytes | str) -> bytes:
     """
     Mengenkripsi private key PEM menggunakan AES-256-GCM.
 
     Args:
-        private_key_pem: Bytes dari private key dalam format PEM.
-        master_password: Password master dari pengguna (dalam bytes).
+        private_key_pem: Bytes atau str dari private key dalam format PEM.
+        master_password: Password master dari pengguna (bytes atau str).
 
     Returns:
         Bytes berformat: salt (16) + iv (12) + tag (16) + ciphertext
@@ -62,6 +61,11 @@ def encrypt_private_key(private_key_pem: bytes, master_password: bytes) -> bytes
     Raises:
         ValueError: Jika private_key_pem atau master_password kosong.
     """
+    if isinstance(private_key_pem, str):
+        private_key_pem = private_key_pem.encode('utf-8')
+    if isinstance(master_password, str):
+        master_password = master_password.encode('utf-8')
+
     if not private_key_pem:
         raise ValueError("Private key PEM tidak boleh kosong.")
     if not master_password:
@@ -84,27 +88,33 @@ def encrypt_private_key(private_key_pem: bytes, master_password: bytes) -> bytes
     return salt + iv + ciphertext_with_tag
 
 
-def decrypt_private_key(encrypted_data: bytes, master_password: bytes) -> bytes:
+def decrypt_private_key(encrypted_data: bytes, master_password: bytes | str) -> bytes:
     """
     Mendekripsi private key PEM dari bentuk terenkripsi AES-256-GCM.
 
     Args:
         encrypted_data: Bytes berformat salt + iv + ciphertext_with_tag.
-        master_password: Password master dari pengguna (dalam bytes).
+        master_password: Password master dari pengguna (bytes atau str).
 
     Returns:
         Bytes dari private key dalam format PEM (plaintext).
 
     Raises:
-        ValueError: Jika data terlalu pendek atau password salah.
+        ValueError: Jika data terlalu pendek atau password kosong.
         cryptography.exceptions.InvalidTag: Jika password salah
             atau data telah dimodifikasi (integritas gagal).
     """
+    if isinstance(master_password, str):
+        master_password = master_password.encode('utf-8')
+
+    if not master_password:
+        raise ValueError("Master password tidak boleh kosong.")
+
     min_length = SALT_LENGTH + IV_LENGTH + 16  # 16 = minimum tag size
-    if len(encrypted_data) < min_length:
+    if not encrypted_data or len(encrypted_data) < min_length:
         raise ValueError(
             f"Data terenkripsi terlalu pendek (min {min_length} byte, "
-            f"diterima {len(encrypted_data)} byte)."
+            f"diterima {len(encrypted_data) if encrypted_data else 0} byte)."
         )
 
     # 1. Pisahkan komponen dari binary blob
@@ -122,14 +132,14 @@ def decrypt_private_key(encrypted_data: bytes, master_password: bytes) -> bytes:
     return plaintext
 
 
-def save_encrypted_key(private_key_pem: bytes, master_password: bytes,
+def save_encrypted_key(private_key_pem: bytes | str, master_password: bytes | str,
                        output_path: str) -> str:
     """
     Mengenkripsi private key lalu menyimpannya ke file.
 
     Args:
-        private_key_pem: Bytes dari private key PEM.
-        master_password: Password master pengguna.
+        private_key_pem: Bytes atau str dari private key PEM.
+        master_password: Password master pengguna (bytes atau str).
         output_path: Path file tujuan (misal: './keys/private_key.enc').
 
     Returns:
@@ -146,13 +156,13 @@ def save_encrypted_key(private_key_pem: bytes, master_password: bytes,
     return output_path
 
 
-def load_encrypted_key(encrypted_path: str, master_password: bytes) -> bytes:
+def load_encrypted_key(encrypted_path: str, master_password: bytes | str) -> bytes:
     """
     Membaca file private key terenkripsi lalu mendekripsinya.
 
     Args:
         encrypted_path: Path file terenkripsi.
-        master_password: Password master pengguna.
+        master_password: Password master pengguna (bytes atau str).
 
     Returns:
         Bytes private key PEM (plaintext).

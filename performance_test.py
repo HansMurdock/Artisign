@@ -121,8 +121,13 @@ def run_test():
         # Simpan CSV
         # ==========================
 
+        csv_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "security_performance_result.csv"
+        )
+
         with open(
-            "security_performance_result.csv",
+            csv_path,
             "w",
             newline=""
         ) as file:

@@ -23,6 +23,9 @@ os.makedirs(app.config['KEYS_FOLDER'], exist_ok=True)
 crypto_app = DigitalSignatureApp()
 qr_manager = FileQRManager(crypto_app)
 
+# Batas maksimal ukuran unggah berkas: 100 MB (aman untuk shared hosting/cloud free tier)
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
+
 def get_key_paths():
     priv_path = os.path.join(app.config['KEYS_FOLDER'], "private_key.pem")
     pub_path = os.path.join(app.config['KEYS_FOLDER'], "public_key.pem")
@@ -30,8 +33,13 @@ def get_key_paths():
 
 @app.route('/')
 def index():
-    """Halaman dashboard utama (Ruang Kreator & Validator Publik)"""
-    return render_template('index.html')
+    """Halaman Landing Page Utama Artisign"""
+    return render_template('landing.html')
+
+@app.route('/creator')
+def creator_page():
+    """Halaman khusus Ruang Kreator (Penerbitan Sertifikat & Tanda Tangan)"""
+    return render_template('creator.html')
 
 @app.route('/validator')
 def validator_page():
@@ -275,6 +283,14 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('result.html', type='error', title='500 - Kesalahan Server Internal', message='Terjadi kendala teknis pada sistem. Silakan coba kembali beberapa saat lagi.'), 500
 
+@app.errorhandler(413)
+def request_entity_too_large(e):
+    return render_template('result.html', type='error', title='413 - Ukuran Berkas Terlalu Besar', 
+                           message='Ukuran berkas melebihi batas maksimal 100 MB. Untuk berkas berukuran gigabyte, Anda dapat menggunakan halaman Validator dengan fitur Client-Side Hashing tanpa perlu mengunggah file.'), 413
+
+
 if __name__ == '__main__':
-    # Menjalankan server lokal di port 5000
-    app.run(debug=True)
+    # Port dinamis mendukung local running maupun platform cloud (Render/Railway/Heroku)
+    port = int(os.environ.get('PORT', 5000))
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() in ['true', '1']
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)

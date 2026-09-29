@@ -36,6 +36,10 @@ class ArtisignPhase1TestCase(unittest.TestCase):
         self.assertEqual(res_validator.status_code, 200)
         self.assertIn(b"Validator Keaslian", res_validator.data)
 
+        res_creator = self.client.get('/creator')
+        self.assertEqual(res_creator.status_code, 200)
+        self.assertIn(b"Ruang Kreator", res_creator.data)
+
     def test_02_sign_wrong_password(self):
         """Uji penolakan jika password salah saat menandatangani"""
         data = {

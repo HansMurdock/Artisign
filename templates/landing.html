@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisign — Platform Sertifikasi & Tanda Tangan Digital Kriptografis</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .hero-glow {
+            background: radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.15), transparent 70%);
+        }
+        .badge-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+        }
+        .cert-card-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-500 selection:text-white flex flex-col min-h-screen">
+
+    <!-- ===================================================================== -->
+    <!-- 1. NAVIGATION BAR -->
+    <!-- ===================================================================== -->
+    <header class="sticky top-0 z-50 glass-nav border-b border-slate-200/80 transition-all duration-200">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-11 h-11 bg-gradient-to-tr from-blue-700 to-blue-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-2xl font-extrabold tracking-tight text-slate-900 block leading-tight">Artisign</span>
+                    <span class="text-[10px] font-mono tracking-wider font-semibold uppercase text-blue-600 block">Digital Asset Provenance</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+                <a href="#fitur" class="hover:text-blue-600 transition">Fitur Unggulan</a>
+                <a href="#cara-kerja" class="hover:text-blue-600 transition">Cara Kerja</a>
+                <a href="#keamanan" class="hover:text-blue-600 transition">Spesifikasi Kriptografi</a>
+                <a href="#faq" class="hover:text-blue-600 transition">FAQ</a>
+            </nav>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3">
+                <a href="/validator" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-100 hover:text-slate-900 transition">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Validator Publik</span>
+                </a>
+                <a href="/creator" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition hover:shadow-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                    <span>Penerbitan Sertifikat</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <!-- ===================================================================== -->
+        <!-- 2. HERO SECTION -->
+        <!-- ===================================================================== -->
+        <section class="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden hero-glow">
+            <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left Column: Copywriting & CTA -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Standar Kriptografi NIST P-256 & FIPS 186-4</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+                        Sertifikasi & Tanda Tangan Digital untuk <span class="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent">Aset Kreatif</span> Anda.
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                        Lindungi karya seni digital, dokumen kontrak, lisensi aset game, dan berkas penting dari pemalsuan. Disegel secara matematis dengan tanda tangan ECDSA, stempel QR interaktif, dan sertifikat berstandar cetak A4.
+                    </p>
+
+                    <!-- CTA Buttons -->
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                        <a href="/creator" class="w-full sm:w-auto px-7 py-4 rounded-xl bg-blue-600 text-white font-bold text-base hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            <span>Penerbitan Sertifikat (Ruang Kreator)</span>
+                        </a>
+                        <a href="/validator" class="w-full sm:w-auto px-7 py-4 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-base hover:bg-slate-100 transition shadow-sm flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            </svg>
+                            <span>Uji Keaslian Dokumen (Validator)</span>
+                        </a>
+                    </div>
+
+                    <!-- Trust indicators -->
+                    <div class="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-500 font-medium">
+                        <div class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span>100% Deteksi Manipulasi Bit</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span>Client-Side Hashing Multi-GB</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span>Brankas Kunci AES-256-GCM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Card Mockup -->
+                <div class="lg:col-span-5">
+                    <div class="relative mx-auto max-w-md">
+                        <!-- Background Glow Accent -->
+                        <div class="absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl blur-xl opacity-30"></div>
+                        
+                        <!-- Main Card -->
+                        <div class="relative cert-card-gradient border border-slate-700/80 rounded-2xl p-6 text-white shadow-2xl space-y-5">
+                            <!-- Card Header -->
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 font-bold text-xs">
+                                        AS
+                                    </div>
+                                    <span class="text-xs font-mono font-bold tracking-wider text-slate-300">CERTIFICATE OF PROVENANCE</span>
+                                </div>
+                                <span class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                    AUTHENTIC & VERIFIED
+                                </span>
+                            </div>
+
+                            <!-- Document Info & Creator -->
+                            <div class="space-y-3 text-xs">
+                                <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+                                    <span class="text-slate-400 block text-[11px]">Nama Aset Tersegel:</span>
+                                    <span class="font-mono text-white font-semibold text-sm">Artwork_Cyberpunk_Hero_3D.zip</span>
+                                    <div class="flex items-center gap-2 pt-1 text-[11px] text-slate-400">
+                                        <span>Kreator: <strong class="text-blue-400">Rafa Ahza Naufal</strong></span>
+                                        <span>•</span>
+                                        <span>Format: <strong>ZIP / 3D Asset</strong></span>
+                                    </div>
+                                </div>
+
+                                <!-- SHA-256 Digest Box -->
+                                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                                    <span class="text-slate-400 text-[10px] uppercase tracking-wider block font-mono">SHA-256 Fingerprint (256-bit):</span>
+                                    <code class="block font-mono text-[11px] text-cyan-300 break-all bg-slate-950 p-2 rounded border border-slate-800/80">
+                                        beab1136a5994bfd20572b80a1755eb2e6724e902d537c1d872f1e1b8ba0a65a
+                                    </code>
+                                </div>
+
+                                <!-- ECDSA Signature Badge & Simulated QR -->
+                                <div class="grid grid-cols-3 gap-3 items-center bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                                    <div class="col-span-2 space-y-1">
+                                        <span class="text-[10px] uppercase font-mono text-slate-400 block">Digital Signature Algorithm:</span>
+                                        <span class="text-xs font-bold text-white block">ECDSA SECP256R1</span>
+                                        <span class="text-[10px] text-slate-400 block">Panjang Kunci: 256-bit Asymmetric</span>
+                                        <span class="text-[10px] text-emerald-400 font-mono block">✓ Tamper Integrity Verified</span>
+                                    </div>
+                                    <div class="col-span-1 bg-white p-2 rounded-lg flex items-center justify-center">
+                                        <!-- SVG Simulated QR Code -->
+                                        <svg class="w-16 h-16 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14-2h4v2h-4v-2zm-4 0h2v4h-2v-4zm2 4h4v2h-4v-2zm2 2h2v2h-2v-2zm-6-2h2v4h-2v-4zm-4-6h2v2h-2v-2zm2 2h2v2h-2v-2zm-2 2h2v2h-2v-2zm6-6h2v2h-2v-2zm2 2h2v2h-2v-2zm-2 2h2v2h-2v-2z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Card Status -->
+                            <div class="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    Live Public Verification
+                                </span>
+                                <span class="font-mono text-slate-400">Speed: 0.0006s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- 3. BENCHMARK & PERFORMANCE STATS (Data Hasil Uji Nyata) -->
+        <!-- ===================================================================== -->
+        <section id="keamanan" class="py-14 bg-white border-y border-slate-200">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <h2 class="text-xs font-mono font-bold tracking-widest text-blue-600 uppercase">Benchmark & Efisiensi</h2>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Performa Kriptografi Teruji & Akurat</p>
+                    <p class="text-sm text-slate-500 mt-2">Divalidasi melalui 30 kali iterasi pengujian empiris tanpa jeda pada lingkungan sistem.</p>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Metric 1 -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center hover:border-blue-400 transition-colors">
+                        <span class="text-3xl sm:text-4xl font-extrabold font-mono text-blue-600 block mb-1">0.0018s</span>
+                        <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-1">Kecepatan Signing</span>
+                        <span class="text-xs text-slate-500">Penandatanganan dokumen dan enkripsi hash seketika</span>
+                    </div>
+
+                    <!-- Metric 2 -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center hover:border-emerald-400 transition-colors">
+                        <span class="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-600 block mb-1">0.0006s</span>
+                        <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-1">Kecepatan Verifikasi</span>
+                        <span class="text-xs text-slate-500">Validasi keaslian tanda tangan dalam hitungan sub-milidetik</span>
+                    </div>
+
+                    <!-- Metric 3 -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center hover:border-indigo-400 transition-colors">
+                        <span class="text-3xl sm:text-4xl font-extrabold font-mono text-indigo-600 block mb-1">100%</span>
+                        <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-1">Akurasi Uji Tamper</span>
+                        <span class="text-xs text-slate-500">Perubahan 1 karakter/bit pun langsung ditolak sebagai dokumen palsu</span>
+                    </div>
+
+                    <!-- Metric 4 -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-center hover:border-cyan-400 transition-colors">
+                        <span class="text-3xl sm:text-4xl font-extrabold font-mono text-cyan-600 block mb-1">71 Byte</span>
+                        <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-1">Ukuran Ringkas</span>
+                        <span class="text-xs text-slate-500">Tanda tangan ECDSA hemat ruang dan mudah disematkan ke QR</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- 4. CARA KERJA (THE 3-STEP CRYPTOGRAPHIC WORKFLOW) -->
+        <!-- ===================================================================== -->
+        <section id="cara-kerja" class="py-20 bg-slate-50">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-mono font-bold tracking-widest text-blue-600 uppercase">Arsitektur Teruji</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">Bagaimana Artisign Melindungi Aset Anda?</h2>
+                    <p class="text-base text-slate-600 mt-3">Tiga lapis perlindungan kriptografi matematis yang menjamin keaslian kepemilikan dan integritas tanpa perantara.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Step 1 -->
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative group hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center font-bold text-lg mb-6 group-hover:scale-110 transition-transform">
+                            01
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3">Ekstraksi Sidik Jari (SHA-256)</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Dokumen asli dipindai untuk menghasilkan 32-byte hash digest yang unik. File berukuran gigabyte sekalipun diproses menggunakan *chunked streaming* tanpa menghabiskan memori RAM.
+                        </p>
+                        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-mono text-blue-600">
+                            <span>One-Way Cryptographic Hash</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative group hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-lg mb-6 group-hover:scale-110 transition-transform">
+                            02
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3">Penandatanganan ECDSA & Brankas Kunci</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Kunci privat kreator menandatangani digest hash menggunakan kurva eliptik P-256. Kunci privat disimpan secara aman dengan proteksi ganda AES-256-GCM dan PBKDF2 (480.000 iterasi).
+                        </p>
+                        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-mono text-indigo-600">
+                            <span>Asymmetric Non-Repudiation</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative group hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center font-bold text-lg mb-6 group-hover:scale-110 transition-transform">
+                            03
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3">Stempel QR & Sertifikat Resmi A4</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Sistem menyematkan stempel visual QR Code ke halaman PDF dengan PyMuPDF, menerbitkan sertifikat fisik siap cetak, serta membungkus tanda tangan ke arsip ZIP portabel.
+                        </p>
+                        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-mono text-emerald-600">
+                            <span>Tamper-Evident Certification</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- 5. FITUR UNGGULAN -->
+        <!-- ===================================================================== -->
+        <section id="fitur" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-mono font-bold tracking-widest text-blue-600 uppercase">Fitur Komprehensif</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">Didesain untuk Kreator, Legal, & Profesional</h2>
+                    <p class="text-base text-slate-600 mt-3">Solusi all-in-one tanpa ketergantungan pihak ketiga atau blockchain yang boros gas fee.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900">Pemindai Kamera Terintegrasi</h3>
+                        <p class="text-sm text-slate-600">Scan QR Code sertifikat secara instan menggunakan kamera smartphone atau webcam laptop tanpa perlu mengunduh aplikasi tambahan.</p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900">Stempel Vektor PDF Otomatis</h3>
+                        <p class="text-sm text-slate-600">Menyematkan stempel visual QR code langsung ke lembar halaman PDF tanpa mengurangi kualitas dokumen asli.</p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900">Client-Side Hashing Multi-GB</h3>
+                        <p class="text-sm text-slate-600">Verifikasi file 3D, video, atau arsip gigabyte secara lokal di peramban tanpa mengunggah berkas ke server, menghemat kuota dan privasi.</p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900">Bundel ZIP Portabel & Mandiri</h3>
+                        <p class="text-sm text-slate-600">Setiap penerbitan mengemas file asli, file tanda tangan (.sig), sertifikat JSON, dan QR code ke dalam satu arsip ZIP siap kirim ke klien.</p>
+                    </div>
+
+                    <!-- Feature 5 -->
+                    <div class="p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900">Brankas Sandi AES-256-GCM</h3>
+                        <p class="text-sm text-slate-600">Kunci privat dienkripsi dengan standar NIST authenticated encryption dan derivasi kunci PBKDF2 480.000 iterasi.</p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900">Certificate of Authenticity A4</h3>
+                        <p class="text-sm text-slate-600">Menghasilkan lembar sertifikat fisik beresolusi tinggi dengan nomor seri unik untuk lampiran kontrak fisik maupun pameran karya.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- 6. DUAL ACCESS PORTAL (ACTION SECTION) -->
+        <!-- ===================================================================== -->
+        <section class="py-20 bg-slate-900 text-white relative overflow-hidden">
+            <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl"></div>
+
+            <div class="max-w-7xl mx-auto px-6 relative z-10">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="text-xs font-mono font-bold tracking-widest text-blue-400 uppercase">Pilih Ruang Kerja</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mt-2">Mulai Gunakan Artisign Sekarang</h2>
+                    <p class="text-slate-400 text-sm mt-3">Pilih portal kerja yang sesuai dengan kebutuhan Anda saat ini.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <!-- Portal 1: Kreator -->
+                    <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-8 flex flex-col justify-between hover:border-blue-500 transition group">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white">Ruang Kreator</h3>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Untuk seniman digital, kreator konten, penulis dokumen hukum, dan developer yang ingin menandatangani serta menyegel aset sebelum dipublikasikan atau dikirim ke klien.
+                            </p>
+                            <ul class="text-xs text-slate-400 space-y-2 pt-2">
+                                <li class="flex items-center gap-2">✓ Penerbitan Sertifikat & Tanda Tangan Kriptografi</li>
+                                <li class="flex items-center gap-2">✓ Stempel Visual QR Code ke Dokumen PDF</li>
+                                <li class="flex items-center gap-2">✓ Unduh Bundel Lengkap (.zip, .sig, .json)</li>
+                            </ul>
+                        </div>
+                        <div class="pt-8">
+                            <a href="/creator" class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition shadow-lg shadow-blue-600/30">
+                                <span>Buka Ruang Kreator (Penerbitan Sertifikat)</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Portal 2: Validator -->
+                    <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-8 flex flex-col justify-between hover:border-emerald-500 transition group">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white">Validator Publik</h3>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Untuk klien, pembeli aset, kurator, dan penguji integritas yang ingin memverifikasi apakah berkas yang diterima adalah karya asli atau sudah mengalami manipulasi/tampering.
+                            </p>
+                            <ul class="text-xs text-slate-400 space-y-2 pt-2">
+                                <li class="flex items-center gap-2">✓ Verifikasi Langsung via Kamera Webcam/HP</li>
+                                <li class="flex items-center gap-2">✓ Drag & Drop Pengujian Integritas File Asli</li>
+                                <li class="flex items-center gap-2">✓ Deteksi Pemalsuan & Status Validitas Instan</li>
+                            </ul>
+                        </div>
+                        <div class="pt-8">
+                            <a href="/validator" class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition shadow-lg shadow-emerald-600/30">
+                                <span>Buka Validator Publik (Uji Tamper)</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- 7. FREQUENTLY ASKED QUESTIONS (FAQ) -->
+        <!-- ===================================================================== -->
+        <section id="faq" class="py-20 bg-slate-50">
+            <div class="max-w-4xl mx-auto px-6">
+                <div class="text-center mb-14">
+                    <span class="text-xs font-mono font-bold tracking-widest text-blue-600 uppercase">Pertanyaan Umum</span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 mt-2">Frequently Asked Questions</h2>
+                    <p class="text-sm text-slate-600 mt-2">Jawaban seputar aspek keamanan, privasi data, dan keabsahan tanda tangan.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- FAQ 1 -->
+                    <details name="faq" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm group">
+                        <summary class="font-bold text-slate-900 text-base cursor-pointer flex items-center justify-between list-none">
+                            <span>Apa yang terjadi jika berkas digital diubah meski hanya 1 karakter atau 1 pixel?</span>
+                            <span class="text-blue-600 text-lg group-open:rotate-180 transition-transform">&darr;</span>
+                        </summary>
+                        <p class="text-sm text-slate-600 mt-3 leading-relaxed border-t border-slate-100 pt-3">
+                            Fungsi hash SHA-256 memiliki sifat *Avalanche Effect*. Mengubah 1 bit data sekalipun akan menghasilkan 32-byte hash yang berbeda total. Saat diverifikasi dengan tanda tangan ECDSA, sistem secara matematis akan langsung menolak dokumen dan memberikan status <strong>DOKUMEN TIDAK VALID / TELAH DIMODIFIKASI</strong>.
+                        </p>
+                    </details>
+
+                    <!-- FAQ 2 -->
+                    <details name="faq" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm group">
+                        <summary class="font-bold text-slate-900 text-base cursor-pointer flex items-center justify-between list-none">
+                            <span>Apakah berkas rahasia saya diunggah ke internet saat verifikasi?</span>
+                            <span class="text-blue-600 text-lg group-open:rotate-180 transition-transform">&darr;</span>
+                        </summary>
+                        <p class="text-sm text-slate-600 mt-3 leading-relaxed border-t border-slate-100 pt-3">
+                            Tidak. Halaman Validator Artisign menggunakan teknologi <strong>Client-Side Hashing</strong> melalui Web Crypto API. Berkas Anda dianalisis secara lokal di dalam browser laptop/HP Anda. Hanya sidik jari hash (string 64 karakter) yang dicocokkan, sehingga privasi dan kerahasiaan isi berkas tetap 100% aman di perangkat Anda.
+                        </p>
+                    </details>
+
+                    <!-- FAQ 3 -->
+                    <details name="faq" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm group">
+                        <summary class="font-bold text-slate-900 text-base cursor-pointer flex items-center justify-between list-none">
+                            <span>Bagaimana cara orang lain memverifikasi berkas saya?</span>
+                            <span class="text-blue-600 text-lg group-open:rotate-180 transition-transform">&darr;</span>
+                        </summary>
+                        <p class="text-sm text-slate-600 mt-3 leading-relaxed border-t border-slate-100 pt-3">
+                            Sangat mudah! Mereka cukup mengarahkan kamera HP ke stempel QR Code di dokumen PDF Anda, atau mengunggah file sertifikat JSON / ZIP ke halaman Validator Publik. Sistem akan seketika mencocokkan kunci publik dan sidik jari dokumen.
+                        </p>
+                    </details>
+
+                    <!-- FAQ 4 -->
+                    <details name="faq" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm group">
+                        <summary class="font-bold text-slate-900 text-base cursor-pointer flex items-center justify-between list-none">
+                            <span>Format file apa saja yang didukung oleh Artisign?</span>
+                            <span class="text-blue-600 text-lg group-open:rotate-180 transition-transform">&darr;</span>
+                        </summary>
+                        <p class="text-sm text-slate-600 mt-3 leading-relaxed border-t border-slate-100 pt-3">
+                            Artisign mendukung seluruh jenis berkas digital (PDF, Dokumen DOCX, Gambar PNG/JPG, Video MP4, Model 3D FBX/OBJ, maupun Arsip ZIP). Khusus dokumen PDF, sistem menyediakan fitur tambahan stempel visual QR code langsung pada lembar dokumen.
+                        </p>
+                    </details>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- 8. FOOTER -->
+    <!-- ===================================================================== -->
+    <footer class="bg-slate-950 text-slate-400 text-xs border-t border-slate-800 py-12">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">A</div>
+                    <span class="text-lg font-bold text-white tracking-tight">Artisign</span>
+                </div>
+                <p class="text-slate-500 text-xs leading-relaxed">
+                    Sistem Sertifikasi & Tanda Tangan Digital Kriptografis untuk Perlindungan Hak Cipta dan Bukti Keaslian Aset Digital.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-3 uppercase tracking-wider text-[11px] font-mono">Navigasi Cepat</h4>
+                <ul class="space-y-2">
+                    <li><a href="/" class="hover:text-white transition">Beranda</a></li>
+                    <li><a href="/creator" class="hover:text-white transition">Ruang Kreator (Penerbitan Sertifikat)</a></li>
+                    <li><a href="/validator" class="hover:text-white transition">Validator Publik (Uji Tamper)</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-3 uppercase tracking-wider text-[11px] font-mono">Standar Keamanan</h4>
+                <ul class="space-y-2">
+                    <li>NIST SECP256R1 (ECDSA P-256)</li>
+                    <li>SHA-256 Secure Hash Standard (FIPS 180-4)</li>
+                    <li>AES-256-GCM (NIST SP 800-38D)</li>
+                    <li>PBKDF2-HMAC-SHA256 (OWASP 2023)</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-3 uppercase tracking-wider text-[11px] font-mono">Integrasi Sistem</h4>
+                <ul class="space-y-2">
+                    <li>PyMuPDF Vector PDF Stamping</li>
+                    <li>Web Crypto API (SubtleCrypto)</li>
+                    <li>HTML5 QR Camera Reader</li>
+                    <li>JSON Linked Provenance Bundle</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500">
+            <span>&copy; 2026 Artisign Cryptographic Provenance Engine. Hak Cipta Dilindungi.</span>
+            <span class="font-mono text-emerald-400 font-semibold">● Engine Status: Online & Secured</span>
+        </div>
+    </footer>
+
+</body>
+</html>
