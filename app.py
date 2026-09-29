@@ -146,33 +146,60 @@ def sign_file():
 def verify_file():
     """
     Menangani verifikasi dokumen:
-    - POST: Verifikasi file sertifikat (.json/.sig/.zip/.pdf) dengan file aset asli (Tamper Test).
-    - GET : Menampilkan halaman informasi verifikasi atau mendeteksi parameter QR Code (?hash=...&signature=...).
+    - POST: 
+      1. Mode QR Code: Verifikasi file aset langsung terhadap data tanda tangan & hash dari QR Code.
+      2. Mode Berkas: Verifikasi file sertifikat (.json/.sig/.zip/.pdf) dengan file aset asli.
+    - GET : Menampilkan halaman informasi verifikasi atau mendeteksi parameter QR Code (?hash=...&signature=...&creator=...).
     """
     priv_key_path, pub_key_path = get_key_paths()
 
     if request.method == 'GET':
         query_hash = request.args.get('hash')
         query_sig = request.args.get('signature')
+        query_creator = request.args.get('creator', 'Terdaftar')
+
+        if query_sig:
+            query_sig = query_sig.replace(' ', '+')
 
         if query_hash:
             # Jika pengguna membuka tautan langsung dari hasil scan QR Code
             return render_template('validator.html', 
                                    prefilled_hash=query_hash, 
-                                   prefilled_sig=query_sig)
+                                   prefilled_sig=query_sig,
+                                   prefilled_creator=query_creator)
         return render_template('validator.html')
 
-    # POST: Memproses berkas yang diunggah
-    if 'cert_file' not in request.files or 'asset_file' not in request.files:
+    # POST: Memproses berkas dan/atau parameter QR yang dikirim
+    qr_hash = request.form.get('qr_hash', '').strip()
+    qr_sig = request.form.get('qr_signature', '').strip()
+    qr_creator = request.form.get('qr_creator', '').strip()
+    if qr_sig:
+        qr_sig = qr_sig.replace(' ', '+')
+
+    # Validasi awal kelengkapan payload (kompatibel dengan test existing)
+    has_qr_mode = bool(qr_hash and qr_sig)
+    if not has_qr_mode and 'cert_file' not in request.files:
         return render_template('result.html', 
                                type='error', 
                                title='File Tidak Lengkap', 
                                message='Harap unggah kedua file: Berkas Sertifikat (.json/.sig/.zip/.pdf) dan Berkas Aset Asli.')
 
-    cert_file = request.files['cert_file']
-    asset_file = request.files['asset_file']
+    if 'asset_file' not in request.files:
+        return render_template('result.html', 
+                               type='error', 
+                               title='File Tidak Lengkap', 
+                               message='Harap unggah kedua file: Berkas Sertifikat (.json/.sig/.zip/.pdf) dan Berkas Aset Asli.')
 
-    if cert_file.filename == '' or asset_file.filename == '':
+    asset_file = request.files['asset_file']
+    cert_file = request.files.get('cert_file')
+
+    if asset_file.filename == '':
+        return render_template('result.html', 
+                               type='error', 
+                               title='File Kosong', 
+                               message='File aset yang dipilih tidak valid atau kosong.')
+
+    if not has_qr_mode and (not cert_file or cert_file.filename == ''):
         return render_template('result.html', 
                                type='error', 
                                title='File Kosong', 
@@ -188,22 +215,33 @@ def verify_file():
     os.makedirs(temp_dir, exist_ok=True)
 
     uid = uuid.uuid4().hex[:8]
-    raw_cert_name = secure_filename(cert_file.filename) or "cert.dat"
     raw_asset_name = secure_filename(asset_file.filename) or "asset.dat"
-
-    cert_path = os.path.join(temp_dir, f"{uid}_{raw_cert_name}")
     asset_path = os.path.join(temp_dir, f"{uid}_{raw_asset_name}")
+    cert_path = None
 
     try:
-        cert_file.save(cert_path)
         asset_file.save(asset_path)
 
-        # Jalankan mesin verifikasi
-        verification = qr_manager.verify_certificate_file(cert_path, asset_path, pub_key_path)
+        # Kasus A: Verifikasi via Data QR Code (Scan QR langsung / Prefilled)
+        if has_qr_mode:
+            creator_info = {"name": qr_creator or "Terdaftar", "role": "Creator"}
+            verification = qr_manager.verify_signature_data(
+                asset_file_path=asset_path,
+                expected_hash_hex=qr_hash,
+                signature_b64=qr_sig,
+                public_key_path=pub_key_path,
+                creator_info=creator_info
+            )
+        # Kasus B: Verifikasi via File Sertifikat (.json/.sig/.zip/.pdf)
+        else:
+            raw_cert_name = secure_filename(cert_file.filename) or "cert.dat"
+            cert_path = os.path.join(temp_dir, f"{uid}_{raw_cert_name}")
+            cert_file.save(cert_path)
+            verification = qr_manager.verify_certificate_file(cert_path, asset_path, pub_key_path)
 
         if verification.get('valid'):
             creator = verification.get('creator') or {}
-            creator_name = creator.get('name', 'Terdaftar')
+            creator_name = creator.get('name', qr_creator or 'Terdaftar')
             return render_template('result.html',
                                    type='success',
                                    title='Dokumen 100% Asli & Terverifikasi!',
@@ -236,7 +274,7 @@ def verify_file():
     finally:
         # Pembersihan berkas sementara dengan jaminan eksekusi
         for p in [cert_path, asset_path]:
-            if os.path.exists(p):
+            if p and os.path.exists(p):
                 try:
                     os.remove(p)
                 except Exception:

@@ -2,6 +2,7 @@ import os
 import json
 import base64
 import zipfile
+import urllib.parse
 import qrcode
 from crypto_core import DigitalSignatureApp
 from pdf_manager import PDFManager
@@ -44,11 +45,15 @@ class FileQRManager:
         signature_bytes = self.crypto_app.sign_document(file_path, private_key_path, password)
         signature_b64 = base64.b64encode(signature_bytes).decode('utf-8')
 
-        # 4. Buat URL Verifikasi & Payload
+        # 4. Buat URL Verifikasi & Payload (dengan URL-encoding aman untuk signature)
+        safe_sig = urllib.parse.quote_plus(signature_b64)
+        creator_name = creator_metadata.get("name", "Creator")
+        safe_creator = urllib.parse.quote_plus(creator_name)
         verification_url = (
             f"{verification_url_base}?"
             f"hash={file_hash_hex}&"
-            f"signature={signature_b64}"
+            f"signature={safe_sig}&"
+            f"creator={safe_creator}"
         )
 
         qr_payload = {
@@ -71,7 +76,8 @@ class FileQRManager:
 
         # 7. Generate dan Simpan Gambar QR Code ke folder output
         qr_output_path = os.path.join(output_dir, qr_filename)
-        qr_content = json.dumps(qr_payload, indent=2)
+        # Konten QR Code menggunakan URL verifikasi agar langsung dapat dibuka oleh kamera HP/scanner
+        qr_content = verification_url
 
         qr = qrcode.QRCode(
             version=1,
@@ -159,7 +165,9 @@ class FileQRManager:
         file_hash_hex = file_hash.hex() if isinstance(file_hash, bytes) else str(file_hash)
         signature_b64 = base64.b64encode(signature).decode('utf-8') if isinstance(signature, bytes) else str(signature)
 
-        verification_url = f"{verification_url_base}?hash={file_hash_hex}&signature={signature_b64}"
+        safe_sig = urllib.parse.quote_plus(signature_b64)
+        safe_creator = urllib.parse.quote_plus(creator_name)
+        verification_url = f"{verification_url_base}?hash={file_hash_hex}&signature={safe_sig}&creator={safe_creator}"
         qr_payload = {
             "creator": {"name": creator_name, "role": "Creator"},
             "hash": file_hash_hex,
@@ -178,7 +186,7 @@ class FileQRManager:
             box_size=10,
             border=4,
         )
-        qr.add_data(json.dumps(qr_payload, indent=2))
+        qr.add_data(verification_url)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
         img.save(qr_output_path)
@@ -279,6 +287,13 @@ class FileQRManager:
                     "message": "Dokumen PDF ini tidak memiliki sertifikat digital Artisign tertanam."
                 }
 
+        elif ext in [".png", ".jpg", ".jpeg", ".webp"]:
+            return {
+                "valid": False,
+                "tampered": True,
+                "message": "Anda mengunggah file gambar QR Code. Untuk memeriksa QR Code dari gambar, gunakan fitur pemindai QR Code di halaman Validator (pilih 'Unggah Gambar QR Code' atau pindai via kamera)."
+            }
+
         else:
             return {
                 "valid": False,
@@ -309,6 +324,79 @@ class FileQRManager:
                 }
 
         # 2. Uji Keabsahan Tanda Tangan Kriptografis ECDSA P-256
+        sig_valid = self.crypto_app.verify_signature(asset_file_path, signature_bytes, public_key_path)
+
+        if sig_valid and hash_matched:
+            return {
+                "valid": True,
+                "tampered": False,
+                "hash_matched": True,
+                "signature_valid": True,
+                "calculated_hash": current_hash_hex,
+                "creator": creator_info,
+                "message": "Dokumen terbukti ASLI dan belum pernah dimanipulasi sama sekali."
+            }
+        else:
+            return {
+                "valid": False,
+                "tampered": True,
+                "hash_matched": hash_matched,
+                "signature_valid": False,
+                "calculated_hash": current_hash_hex,
+                "creator": creator_info,
+                "message": "Tanda tangan digital tidak valid atau kunci publik tidak cocok."
+            }
+
+    def verify_signature_data(
+        self,
+        asset_file_path: str,
+        expected_hash_hex: str,
+        signature_b64: str,
+        public_key_path: str,
+        creator_info: dict | None = None
+    ) -> dict:
+        """
+        Memverifikasi keaslian dokumen secara langsung dari nilai hash dan
+        tanda tangan digital (misalnya yang didapatkan dari pemindaian QR Code)
+        tanpa memerlukan pengunggahan file sertifikat terpisah.
+        """
+        if not os.path.exists(asset_file_path):
+            return {"valid": False, "tampered": True, "message": "File aset asli tidak ditemukan."}
+        if not os.path.exists(public_key_path):
+            return {"valid": False, "tampered": True, "message": "Kunci publik verifikator tidak ditemukan di server."}
+
+        current_hash_hex = self.crypto_app.hash_file(asset_file_path).hex()
+
+        # 1. Uji Tamper Hash
+        clean_expected_hash = expected_hash_hex.strip() if expected_hash_hex else ""
+        hash_matched = (current_hash_hex.lower() == clean_expected_hash.lower())
+        if not hash_matched:
+            return {
+                "valid": False,
+                "tampered": True,
+                "hash_matched": False,
+                "expected_hash": clean_expected_hash,
+                "calculated_hash": current_hash_hex,
+                "creator": creator_info,
+                "message": "Peringatan! Sidik jari dokumen tidak cocok. File aset telah diubah/dimanipulasi (Tampered)!"
+            }
+
+        # 2. Decode signature b64 (tahan terhadap space dari URL decoding)
+        clean_sig_b64 = signature_b64.replace(' ', '+').strip()
+        try:
+            signature_bytes = base64.b64decode(clean_sig_b64)
+        except Exception as e:
+            return {
+                "valid": False,
+                "tampered": True,
+                "hash_matched": hash_matched,
+                "expected_hash": clean_expected_hash,
+                "calculated_hash": current_hash_hex,
+                "creator": creator_info,
+                "message": f"Format tanda tangan digital QR Code tidak valid: {str(e)}"
+            }
+
+        # 3. Uji Keabsahan Tanda Tangan Kriptografis ECDSA P-256
         sig_valid = self.crypto_app.verify_signature(asset_file_path, signature_bytes, public_key_path)
 
         if sig_valid and hash_matched:

@@ -216,5 +216,95 @@ class ArtisignPhase1TestCase(unittest.TestCase):
         res_404 = self.client.get('/halaman_ngawur_123')
         self.assertEqual(res_404.status_code, 404)
 
+    def test_11_verify_via_qr_code_data_success(self):
+        """Uji verifikasi keaslian dokumen via data QR Code langsung (tanpa file sertifikat)"""
+        # 1. Tandatangani dokumen
+        content = b"Dokumen Karya Seni Digital - Game Asset Original."
+        sign_data = {
+            'file_upload': (io.BytesIO(content), 'game_asset.png'),
+            'creator_name': 'Indie Game Studio',
+            'password': self.password
+        }
+        self.client.post('/sign', data=sign_data, content_type='multipart/form-data')
+
+        # 2. Baca file sertifikat JSON hasil sign untuk mendapatkan hash & signature
+        cert_path = os.path.join(app.config['OUTPUT_FOLDER'], 'game_asset_certificate.json')
+        with open(cert_path, 'r', encoding='utf-8') as f:
+            cert_data = json.load(f)
+
+        # 3. Verifikasi via POST /verify hanya dengan asset_file + data QR Code (qr_hash, qr_signature)
+        verify_data = {
+            'asset_file': (io.BytesIO(content), 'game_asset.png'),
+            'qr_hash': cert_data['hash'],
+            'qr_signature': cert_data['signature'],
+            'qr_creator': 'Indie Game Studio'
+        }
+        res = self.client.post('/verify', data=verify_data, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b"Dokumen 100% Asli &amp; Terverifikasi!", res.data)
+        self.assertIn(b"Indie Game Studio", res.data)
+
+    def test_12_verify_via_qr_code_data_tampered(self):
+        """Uji deteksi pemalsuan (tamper) saat verifikasi via QR Code"""
+        original_content = b"Dokumen Asli Tidak Boleh Diubah."
+        tampered_content = b"Dokumen Dimanipulasi Hacker."
+        sign_data = {
+            'file_upload': (io.BytesIO(original_content), 'source_file.txt'),
+            'creator_name': 'Original Author',
+            'password': self.password
+        }
+        self.client.post('/sign', data=sign_data, content_type='multipart/form-data')
+
+        cert_path = os.path.join(app.config['OUTPUT_FOLDER'], 'source_file_certificate.json')
+        with open(cert_path, 'r', encoding='utf-8') as f:
+            cert_data = json.load(f)
+
+        # Kirim file tampered dengan qr_hash asli
+        verify_data = {
+            'asset_file': (io.BytesIO(tampered_content), 'source_file.txt'),
+            'qr_hash': cert_data['hash'],
+            'qr_signature': cert_data['signature']
+        }
+        res = self.client.post('/verify', data=verify_data, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b"Peringatan: Dokumen Telah Diubah", res.data)
+
+    def test_13_qr_signature_with_spaces_from_url_decoding(self):
+        """Uji ketahanan decode signature Base64 jika karakter '+' berubah jadi spasi di URL"""
+        content = b"Data Keuangan Transaksi Penting."
+        sign_data = {
+            'file_upload': (io.BytesIO(content), 'keuangan.dat'),
+            'creator_name': 'Akuntan Publik',
+            'password': self.password
+        }
+        self.client.post('/sign', data=sign_data, content_type='multipart/form-data')
+
+        cert_path = os.path.join(app.config['OUTPUT_FOLDER'], 'keuangan_certificate.json')
+        with open(cert_path, 'r', encoding='utf-8') as f:
+            cert_data = json.load(f)
+
+        # Ubah '+' menjadi ' ' untuk mensimulasikan URL query decoding default
+        sig_with_spaces = cert_data['signature'].replace('+', ' ')
+
+        verify_data = {
+            'asset_file': (io.BytesIO(content), 'keuangan.dat'),
+            'qr_hash': cert_data['hash'],
+            'qr_signature': sig_with_spaces,
+            'qr_creator': 'Akuntan Publik'
+        }
+        res = self.client.post('/verify', data=verify_data, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b"Dokumen 100% Asli &amp; Terverifikasi!", res.data)
+
+    def test_14_upload_image_as_cert_file_guidance(self):
+        """Uji panduan edukatif saat pengguna keliru mengunggah gambar QR (.png) ke cert_file"""
+        data = {
+            'cert_file': (io.BytesIO(b"\x89PNG\r\n\x1a\n...fake png"), 'qr_sertifikat.png'),
+            'asset_file': (io.BytesIO(b"konten aset"), 'asset.pdf')
+        }
+        res = self.client.post('/verify', data=data, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b"gambar QR Code", res.data)
+
 if __name__ == '__main__':
     unittest.main()
