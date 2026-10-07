@@ -1,0 +1,10 @@
+import os
+
+# Render and cloud platforms supply $PORT
+port = os.environ.get("PORT", "5000")
+bind = f"0.0.0.0:{port}"
+workers = 2
+threads = 4
+timeout = 120
+accesslog = "-"
+errorlog = "-"
