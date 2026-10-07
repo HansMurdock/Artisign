@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: artisign
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: MASTER_KEY_PASSWORD
+        value: "super_secret_password_123"

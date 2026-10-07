@@ -29,7 +29,13 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 def get_key_paths():
     priv_path = os.path.join(app.config['KEYS_FOLDER'], "private_key.pem")
     pub_path = os.path.join(app.config['KEYS_FOLDER'], "public_key.pem")
+    if not os.path.exists(priv_path) or not os.path.exists(pub_path):
+        default_pwd = os.environ.get("MASTER_KEY_PASSWORD", "super_secret_password_123").encode('utf-8')
+        crypto_app.generate_keys(default_pwd, save_path=app.config['KEYS_FOLDER'])
     return priv_path, pub_path
+
+# Pastikan pasangan kunci server siap digunakan saat server pertama kali berjalan
+get_key_paths()
 
 @app.route('/')
 def index():
